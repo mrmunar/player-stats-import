@@ -37,9 +37,8 @@ class PlayerStatsImport extends Command
      *
      * @return mixed
      */
-    public function handle(PlayerStatsInterface $client)
+    public function handle(PlayerStatsInterface $client, PlayerImportData $playerImportData)
     {
-        PlayerImportData::truncate();
         $playerStatsCollection = collect(json_decode($client->fetchPlayerStats()));
 
         $progressTotal = round($playerStatsCollection->count() / 100) + 1;
@@ -49,10 +48,11 @@ class PlayerStatsImport extends Command
 
         $chunks = $playerStatsCollection->chunk(100);
 
-        $chunks->map(function($chunk) use ($bar) {
-            $chunk->map(function($player) {
-                PlayerImportData::create([
+        $chunks->map(function($chunk) use ($bar, $playerImportData) {
+            $chunk->map(function($player) use($playerImportData) {
+                $playerImportData->updateOrCreate([
                     'reference_id' => $player->id,
+                ], [
                     'data' => json_encode($player),
                 ]);
             });
