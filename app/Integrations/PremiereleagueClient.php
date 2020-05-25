@@ -4,7 +4,7 @@ namespace App\Integrations;
 
 use Illuminate\Support\Facades\Http;
 
-class PremiereleagueClient extends Client
+class PremiereleagueClient extends Client implements PlayerStatsInterface
 {
     public function __construct()
     {

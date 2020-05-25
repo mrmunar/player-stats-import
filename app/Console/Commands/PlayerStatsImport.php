@@ -2,7 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Models\PlayerImportData;
 use Illuminate\Console\Command;
+use App\Integrations\PlayerStatsInterface;
 
 class PlayerStatsImport extends Command
 {
@@ -35,10 +37,31 @@ class PlayerStatsImport extends Command
      *
      * @return mixed
      */
-    public function handle()
+    public function handle(PlayerStatsInterface $client)
     {
-        // add integration api
-        // add array chunk
-        // add job to save in database
+        PlayerImportData::truncate();
+        $playerStatsCollection = collect(json_decode($client->fetchPlayerStats()));
+
+        $progressTotal = round($playerStatsCollection->count() / 100) + 1;
+
+        $bar = $this->output->createProgressBar($progressTotal);
+        $bar->start();
+
+        $chunks = $playerStatsCollection->chunk(100);
+
+        $chunks->map(function($chunk) use ($bar) {
+            $chunk->map(function($player) {
+                PlayerImportData::create([
+                    'reference_id' => $player->id,
+                    'data' => $player,
+                ]);
+            });
+
+            $bar->advance();
+        });
+
+        $bar->finish();
+
+        $this->info(PHP_EOL . 'Successfully imported player stats!');
     }
 }
