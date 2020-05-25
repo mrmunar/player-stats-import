@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::prefix('stats')->group(function () {
-    Route::get('/players', 'PlayerStatsController@index');
-    Route::get('/players/{id}', 'PlayerStatsController@show');
+Route::prefix('stats')->name('stats.')->group(function () {
+    Route::get('/players', 'PlayerStatsController@index')->name('players.index');
+    Route::get('/players/{id}', 'PlayerStatsController@show')->name('players.show');
 });

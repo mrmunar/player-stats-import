@@ -15,15 +15,13 @@ class Player extends JsonResource
     public function toArray($request)
     {
         if ($request->input('mode') === 'simple') {
+            $this->data = json_decode($this->data);
             return [
                 'id' => $this->reference_id,
-                'full_name' => $this->data['first_name'] . ' ' . $this->data['second_name']
+                'full_name' => $this->data->first_name . ' ' . $this->data->second_name,
             ];
         }
 
-        return [
-            'id' => $this->reference_id,
-            $this->merge($this->data),
-        ];
+        return json_decode($this->data);
     }
 }

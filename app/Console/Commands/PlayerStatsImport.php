@@ -53,7 +53,7 @@ class PlayerStatsImport extends Command
             $chunk->map(function($player) {
                 PlayerImportData::create([
                     'reference_id' => $player->id,
-                    'data' => $player,
+                    'data' => json_encode($player),
                 ]);
             });
 

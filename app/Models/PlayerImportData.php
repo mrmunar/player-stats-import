@@ -19,8 +19,4 @@ class PlayerImportData extends Model
         'updated_at',
         'deleted_at',
     ];
-
-    protected $casts = [
-        'data' => 'array',
-    ];
 }
