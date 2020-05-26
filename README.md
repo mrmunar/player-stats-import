@@ -23,6 +23,11 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
+Set the API URL in your `.env` file
+```env
+PREMIERLEAGUE_PLAYER_STATS_API_URL=https://fantasy.premierleague.com/api/bootstrap-static/
+```
+
 Generate your application key
 ```bash
 php artisan key:generate
