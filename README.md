@@ -1,79 +1,215 @@
-<p align="center"><img src="https://res.cloudinary.com/dtfbvvkyp/image/upload/v1566331377/laravel-logolockup-cmyk-red.svg" width="400"></p>
+# Player Stats Import
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/d/total.svg" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/v/stable.svg" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/license.svg" alt="License"></a>
-</p>
+Player Stats Import is a backend application built off `Laravel 7`. It has the following features:
 
-## About Laravel
+ - A command for fetching Player Stats from a 3rd party API and saving in local database
+ - Get API's for fetching all or single Player Stats once saved
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Installation
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Run composer install after cloning
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+```bash
+composer install
+```
 
-## Learning Laravel
+Set your database credentials in your `.env` file
+```env
+DB_CONNECTION=mysql
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=testdb
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Generate your application key
+```bash
+php artisan key:generate
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Migrate tables
+```bash
+php artisan migrate
+```
 
-## Laravel Sponsors
+## Usage
+Run the import command to populate your local database
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+```bash
+php artisan stats_import:players
+```
+#### Note:
+This command can also be used as a Cron Job and is currently set to run daily if ever it was triggered. 
+To change the frequency, you can change it in `app/Console/Kernel.php@schedule`
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- [UserInsights](https://userinsights.com)
-- [Fragrantica](https://www.fragrantica.com)
-- [SOFTonSOFA](https://softonsofa.com/)
-- [User10](https://user10.com)
-- [Soumettre.fr](https://soumettre.fr/)
-- [CodeBrisk](https://codebrisk.com)
-- [1Forge](https://1forge.com)
-- [TECPRESSO](https://tecpresso.co.jp/)
-- [Runtime Converter](http://runtimeconverter.com/)
-- [WebL'Agence](https://weblagence.com/)
-- [Invoice Ninja](https://www.invoiceninja.com)
-- [iMi digital](https://www.imi-digital.de/)
-- [Earthlink](https://www.earthlink.ro/)
-- [Steadfast Collective](https://steadfastcollective.com/)
-- [We Are The Robots Inc.](https://watr.mx/)
-- [Understand.io](https://www.understand.io/)
-- [Abdel Elrafa](https://abdelelrafa.com)
-- [Hyper Host](https://hyper.host)
-- [Appoly](https://www.appoly.co.uk)
-- [OP.GG](https://op.gg)
-- [云软科技](http://www.yunruan.ltd/)
+```php
+protected function schedule(Schedule $schedule)
+{
+    $schedule->command('stats_import:players')->daily();
+}
+```
+<https://laravel.com/docs/7.x/scheduling#schedule-frequency-options>
 
-## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Set an initial Cron Job in your server, that runs `php artisan schedule:run`:
 
-## Code of Conduct
+#### Example:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+* * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
+```
 
-## Security Vulnerabilities
+This will constantly check if there are jobs to run in `app/Console/Kernel.php@schedule`. For future developments, you can set additional scheduled jobs in the said method, instead of doing it all in you server (which is pretty convenient).
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## API's
 
-## License
+### Fetch all players
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+`{{your_domain}}/api/v1/stats/players`
+
+Paginated by default of 100 records per page
+
+
+#### Query Parameters
+
+Parameter | Type | Values | Description
+--- | --- | --- | ---
+mode | string/nullable | simple | If mode is set to simple, it will show just the `id` and `full_name` of the players
+page | integer | any integer | Sets the current page number
+
+Example URL:
+
+`{{your_domain}}/api/v1/stats/players?page=2&mode=simple`
+
+Example Response:
+
+```json
+[
+  {
+    "id": 101,
+    "full_name": "Ashley Westwood"
+  },
+  {
+    "id": 102,
+    "full_name": "Jack Cork"
+  },
+  {
+    "id": 103,
+    "full_name": "Marcos Alonso"
+  },
+  {
+    "id": 104,
+    "full_name": "Antonio Rüdiger"
+  }
+]
+```
+
+### Fetch single player by ID
+
+`{{your_domain}}/api/v1/stats/players/{id}`
+
+#### URL Parameters
+
+Parameter | Type | Values | Description
+--- | --- | --- | ---
+id | integer | any integer | Player's ID (based on data imported from API)
+
+#### Query Parameters
+
+Parameter | Type | Values | Description
+--- | --- | --- | ---
+mode | string/nullable | simple | If mode is set to simple, it will show just the `id` and `full_name` of the player
+
+Example URL:
+
+`{{your_domain}}/api/v1/stats/players/444`
+
+Example Response:
+
+```json
+{
+  "id": 444,
+  "bps": 31,
+  "code": 7645,
+  "form": "0.0",
+  "news": "",
+  "team": 15,
+  "bonus": 0,
+  "photo": "7645.jpg",
+  "saves": 0,
+  "status": "a",
+  "threat": "2.0",
+  "assists": 0,
+  "ep_next": "0.0",
+  "ep_this": "0.0",
+  "minutes": 128,
+  "special": false,
+  "now_cost": 41,
+  "web_name": "Jagielka",
+  "ict_index": "4.5",
+  "influence": "39.0",
+  "own_goals": 0,
+  "red_cards": 0,
+  "team_code": 49,
+  "creativity": "4.7",
+  "first_name": "Phil",
+  "news_added": null,
+  "value_form": "0.0",
+  "second_name": "Jagielka",
+  "threat_rank": 419,
+  "clean_sheets": 0,
+  "element_type": 2,
+  "event_points": 0,
+  "goals_scored": 0,
+  "in_dreamteam": false,
+  "squad_number": null,
+  "total_points": 4,
+  "transfers_in": 16536,
+  "value_season": "1.0",
+  "yellow_cards": 0,
+  "transfers_out": 46790,
+  "goals_conceded": 3,
+  "ict_index_rank": 431,
+  "influence_rank": 405,
+  "creativity_rank": 417,
+  "dreamteam_count": 0,
+  "penalties_saved": 0,
+  "points_per_game": "1.0",
+  "penalties_missed": 0,
+  "threat_rank_type": 154,
+  "cost_change_event": 0,
+  "cost_change_start": -4,
+  "transfers_in_event": 0,
+  "ict_index_rank_type": 155,
+  "influence_rank_type": 150,
+  "selected_by_percent": "0.3",
+  "transfers_out_event": 0,
+  "creativity_rank_type": 154,
+  "cost_change_event_fall": 0,
+  "cost_change_start_fall": 4,
+  "chance_of_playing_next_round": null,
+  "chance_of_playing_this_round": null
+}
+```
+
+## Unit Testing
+
+```bash
+./vendor/bin/phpunit
+```
+
+```php
+Player Stats Import (Tests\Feature\Console\Commands\PlayerStatsImport)
+ ✔ Run player stats import command success
+
+Player Stats Controller (Tests\Feature\Http\Controllers\PlayerStatsController)
+ ✔ Get players api success
+ ✔ Get players api simple mode success
+ ✔ Get player api success
+ ✔ Get player api invalid id failure
+
+Time: 573 ms, Memory: 28.00 MB
+
+OK (5 tests, 15 assertions)
+```

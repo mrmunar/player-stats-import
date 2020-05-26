@@ -4,16 +4,16 @@ namespace Tests\Feature\Console\Commands;
 
 use App\Integrations\PlayerStatsInterface;
 use App\Models\PlayerImportData;
-use Tests\WithDatabaseTestCase;
+use Tests\TestCase;
 
-class PlayerStatsImportTest extends WithDatabaseTestCase
+class PlayerStatsImportTest extends TestCase
 {
     public function setUp(): void
     {
         parent::setUp();
     }
 
-    public function testPlayerStatsImportCommandSuccess()
+    public function testRunPlayerStatsImportCommandSuccess()
     {
         $this->mock(PlayerStatsInterface::class, function ($mock) {
             $mock->shouldReceive('fetchPlayerStats')->once()
